@@ -11,6 +11,7 @@ class CitiesViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     @IBOutlet weak var tableView: UITableView!
     
+    
     var weatherData: [WeatherResponse] = []
     var isCelsius: Bool = true
 
@@ -38,7 +39,7 @@ class CitiesViewController: UIViewController, UITableViewDelegate, UITableViewDa
         case 1000: return UIImage(systemName: "sun.max.fill")?.withTintColor(.orange, renderingMode: .alwaysOriginal)
         case 1003: return UIImage(systemName: "cloud.sun.fill")?.withTintColor(.systemBlue, renderingMode: .alwaysOriginal)
         case 1006: return UIImage(systemName: "cloud.fill")?.withTintColor(.gray, renderingMode: .alwaysOriginal)
-        default: return UIImage(systemName: "questionmark.circle.fill")?.withTintColor(.red, renderingMode: .alwaysOriginal)
+        default: return UIImage(systemName: "questionmark")?.withTintColor(.red, renderingMode: .alwaysOriginal)
         }
     }
 }

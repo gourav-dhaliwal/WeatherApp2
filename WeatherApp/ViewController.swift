@@ -28,23 +28,34 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
     // MARK: - View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         cityTextField.delegate = self
+        locationManager.delegate = self
         setupButtons()
+        highlightSelectedButton()
+
+        // Set default city
+        fetchWeather(for: "London")
     }
+
 
     func setupButtons() {
         celsiusButton.layer.cornerRadius = 8
         fahrenheitButton.layer.cornerRadius = 8
         highlightSelectedButton()
     }
+    
 
     // MARK: - IBActions
     @IBAction func searchTapped(_ sender: UIButton) {
-        if let city = cityTextField.text, !city.isEmpty {
+        if let city = cityTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !city.isEmpty {
             fetchWeather(for: city)
             cityTextField.resignFirstResponder()
+        } else {
+            print("Please enter a valid city")
         }
     }
+
 
     @IBAction func locationTapped(_ sender: UIButton) {
         locationManager.delegate = self
@@ -97,13 +108,22 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
 
     // MARK: - API Call
     func fetchWeather(for city: String) {
-        let apiKey = "YOUR_API_KEY"  // Replace with your actual API key
+        let apiKey = "04a1296bf74a4e93a4a205625253003"
         let urlString = "https://api.weatherapi.com/v1/current.json?key=\(apiKey)&q=\(city)"
-        
         guard let url = URL(string: urlString) else { return }
 
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data else { return }
+
+            // 🔍 Check if this is an error JSON
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorInfo = json["error"] as? [String: Any],
+               let message = errorInfo["message"] as? String {
+                print("API Error: \(message)")
+                return
+            }
+
+            // ✅ Try to decode weather data
             do {
                 let weather = try JSONDecoder().decode(WeatherResponse.self, from: data)
                 DispatchQueue.main.async {
@@ -111,10 +131,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDe
                     self.searchedCities.append(weather)
                 }
             } catch {
-                print("JSON error: \(error)")
+                print("JSON decode error: \(error)")
             }
         }.resume()
     }
+
 
     // MARK: - Update UI
     func updateUI(with weather: WeatherResponse) {
